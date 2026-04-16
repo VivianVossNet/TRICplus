@@ -34,4 +34,36 @@ impl Store {
             }
         }
     }
+
+    fn delete_ttl(&mut self, key: &[u8]) {
+        let Some(instant) = self.ttl.remove(key) else {
+            return;
+        };
+        let keys = self.expiry.get_mut(&instant).unwrap();
+        let index = keys
+            .iter()
+            .position(|candidate| candidate.as_ref() == key)
+            .unwrap();
+        keys.swap_remove(index);
+        if keys.is_empty() {
+            self.expiry.remove(&instant);
+        }
+    }
+
+    #[allow(dead_code)]
+    pub(crate) fn read_value(&self, key: &[u8]) -> Option<Bytes> {
+        self.data.get(key).cloned()
+    }
+
+    #[allow(dead_code)]
+    pub(crate) fn write_value(&mut self, key: Bytes, value: Bytes) {
+        self.delete_ttl(&key);
+        self.data.insert(key, value);
+    }
+
+    #[allow(dead_code)]
+    pub(crate) fn delete_entry(&mut self, key: &[u8]) {
+        self.delete_ttl(key);
+        self.data.remove(key);
+    }
 }
