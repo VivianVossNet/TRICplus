@@ -1,0 +1,6 @@
+[submodule "concept/spec/Lean Code"]
+	path = concept/spec/Lean Code
+	url = https://github.com/VivianVossNet/lean-code.git
+[submodule "concept/spec/Leitwerk"]
+	path = concept/spec/Leitwerk
+	url = https://github.com/VivianVossNet/Leitwerk.git
