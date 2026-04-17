@@ -15,6 +15,8 @@ fn main() {
     core.register_module(|| {
         Box::new(create_server(ServerConfig {
             local_path: "/var/run/tric/server.sock".to_string(),
+            udp_bind: "0.0.0.0:7483".to_string(),
+            max_sessions: 10000,
         }))
     });
 
