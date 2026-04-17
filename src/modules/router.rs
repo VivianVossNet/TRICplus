@@ -107,10 +107,10 @@ fn find_by_prefix(request: &Request, data_bus: &Arc<dyn DataBus>) -> Vec<Respons
         return vec![create_error(request.request_id, ERROR_MALFORMED)];
     };
     let pairs = data_bus.find_by_prefix(prefix);
-    let total = pairs.len() as u16;
-    let mut responses = Vec::with_capacity(pairs.len() + 1);
+    let total = pairs.len().min(u16::MAX as usize) as u16;
+    let mut responses = Vec::with_capacity(pairs.len().min(u16::MAX as usize) + 1);
 
-    for (chunk_id, (key, value)) in pairs.iter().enumerate() {
+    for (chunk_id, (key, value)) in pairs.iter().take(u16::MAX as usize).enumerate() {
         let mut payload = Vec::with_capacity(4 + key.len() + 4 + value.len() + 4);
         payload.extend_from_slice(&total.to_be_bytes());
         payload.extend_from_slice(&(chunk_id as u16).to_be_bytes());
