@@ -238,6 +238,7 @@ fn check_full_server_integration() {
     check_opcode_inspect();
     check_opcode_reload();
     check_opcode_restore_and_dump();
+    check_diff_import();
 
     // ServerGuard handles cleanup via Drop
 }
@@ -591,4 +592,62 @@ fn check_opcode_restore_and_dump() {
         has_restore_key,
         "DUMP should contain the restored key restore:test1"
     );
+}
+
+fn check_diff_import() {
+    send_datagram(&build_write_value(90, b"diff:alpha", b"one"));
+    send_datagram(&build_write_value(91, b"diff:beta", b"two"));
+    send_datagram(&build_write_value(92, b"diff:gamma", b"three"));
+
+    let old_path = format!("{SOCKET_DIR}/diff-old.tric");
+    let response = send_admin(&format!("export -f {old_path} --debug"));
+    assert!(
+        response.contains("exported"),
+        "old export should succeed: {response}"
+    );
+
+    send_datagram(&build_write_value(93, b"diff:beta", b"CHANGED"));
+    send_datagram(&build_write_value(94, b"diff:delta", b"four"));
+    send_datagram(&build_delete_value(95, b"diff:gamma"));
+
+    let new_path = format!("{SOCKET_DIR}/diff-new.tric");
+    let response = send_admin(&format!("export -f {new_path} --debug"));
+    assert!(
+        response.contains("exported"),
+        "new export should succeed: {response}"
+    );
+
+    send_datagram(&build_delete_value(96, b"diff:alpha"));
+    send_datagram(&build_delete_value(97, b"diff:beta"));
+    send_datagram(&build_delete_value(98, b"diff:delta"));
+
+    let response = send_admin(&format!("import --diff {old_path} {new_path}"));
+    assert!(
+        response.contains("additions"),
+        "diff import should report additions: {response}"
+    );
+    assert!(
+        response.contains("modifications"),
+        "diff import should report modifications: {response}"
+    );
+    assert!(
+        response.contains("deletions"),
+        "diff import should report deletions: {response}"
+    );
+
+    let response = send_datagram(&build_read_value(99, b"diff:alpha"));
+    check_response_opcode(&response, 0x80);
+
+    let response = send_datagram(&build_read_value(100, b"diff:beta"));
+    check_response_opcode(&response, 0x81);
+    let value_len =
+        u32::from_be_bytes([response[5], response[6], response[7], response[8]]) as usize;
+    let value = &response[9..9 + value_len];
+    assert_eq!(value, b"CHANGED", "diff import should apply modified value");
+
+    let response = send_datagram(&build_read_value(101, b"diff:delta"));
+    check_response_opcode(&response, 0x81);
+
+    let response = send_datagram(&build_read_value(102, b"diff:gamma"));
+    check_response_opcode(&response, 0x80);
 }

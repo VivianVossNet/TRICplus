@@ -240,16 +240,26 @@ fn format_restore(mut parts: std::str::SplitWhitespace, data_bus: &Arc<dyn DataB
 
 fn format_import(mut parts: std::str::SplitWhitespace, data_bus: &Arc<dyn DataBus>) -> String {
     let flag_f = parts.next();
+
+    if flag_f == Some("--diff") {
+        let old_path = parts.next();
+        let new_path = parts.next();
+        let Some((old_path, new_path)) = old_path.zip(new_path) else {
+            return "usage: import --diff <old.tric> <new.tric>\n".to_string();
+        };
+        return format_diff_import(old_path, new_path, data_bus);
+    }
+
     let path = parts.next();
     let flag_format = parts.next();
     let format = parts.next();
     let analyse_only = parts.next() == Some("--analyse");
 
     let Some(("-f", path)) = flag_f.zip(path) else {
-        return "usage: import -f <path> --format mysql|postgres|sqlite [--analyse]\n".to_string();
+        return "usage: import -f <path> --format mysql|postgres|sqlite [--analyse]\n  import --diff <old.tric> <new.tric>\n".to_string();
     };
     let Some(("--format", format)) = flag_format.zip(format) else {
-        return "usage: import -f <path> --format mysql|postgres|sqlite [--analyse]\n".to_string();
+        return "usage: import -f <path> --format mysql|postgres|sqlite [--analyse]\n  import --diff <old.tric> <new.tric>\n".to_string();
     };
 
     let max_file_size: u64 = 1_073_741_824;
@@ -277,6 +287,27 @@ fn format_import(mut parts: std::str::SplitWhitespace, data_bus: &Arc<dyn DataBu
         "{} tables, {} rows, {} relationships imported. {} errors.\n",
         result.tables, result.rows, result.relationships, result.errors
     )
+}
+
+fn format_diff_import(old_path: &str, new_path: &str, data_bus: &Arc<dyn DataBus>) -> String {
+    let max_file_size: u64 = 1_073_741_824;
+    for path in [old_path, new_path] {
+        match std::fs::metadata(path) {
+            Ok(metadata) if metadata.len() > max_file_size => {
+                return format!("error: {path} exceeds 1 GB limit ({}B)\n", metadata.len());
+            }
+            Err(error) => return format!("error: cannot stat {path}: {error}\n"),
+            _ => {}
+        }
+    }
+
+    match crate::modules::import::parse_diff_import(old_path, new_path, data_bus) {
+        Ok(result) => format!(
+            "{} additions, {} modifications, {} deletions applied.\n",
+            result.additions, result.modifications, result.deletions
+        ),
+        Err(error) => format!("error: {error}\n"),
+    }
 }
 
 fn format_query(parts: std::str::SplitWhitespace, data_bus: &Arc<dyn DataBus>) -> String {
@@ -410,6 +441,6 @@ fn format_shutdown() -> String {
 }
 
 fn format_help() -> String {
-    "commands:\n  status              server status\n  keys [-p prefix]    list keys\n  inspect <key>       key metadata\n  import -f <path> --format mysql|postgres|sqlite [--analyse]\n  export -f <path.tric> [--debug] [--format mysql|postgres|sqlite]\n  dump -f <path>      binary store dump\n  restore -f <path>   binary store restore\n  reload              reload authorized_keys\n  shutdown            stop server\n  help                this message\n"
+    "commands:\n  status              server status\n  keys [-p prefix]    list keys\n  inspect <key>       key metadata\n  import -f <path> --format mysql|postgres|sqlite [--analyse]\n  import --diff <old.tric> <new.tric>\n  export -f <path.tric> [--debug] [--format mysql|postgres|sqlite]\n  dump -f <path>      binary store dump\n  restore -f <path>   binary store restore\n  reload              reload authorized_keys\n  shutdown            stop server\n  help                this message\n"
         .to_string()
 }
