@@ -1,3 +1,6 @@
+[workspace]
+members = ["tric-server"]
+
 [package]
 name = "tric"
 version = "0.0.0"

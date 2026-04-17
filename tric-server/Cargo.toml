@@ -1,0 +1,16 @@
+[package]
+name = "tric-server"
+version = "0.0.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "TRIC+ Permutive Database Engine — QNX-style server with Unix-socket transport."
+repository = "https://github.com/VivianVossNet/TRIC"
+authors = ["Vivian Voss"]
+
+[[bin]]
+name = "tric-server"
+path = "src/main.rs"
+
+[dependencies]
+tric = { path = ".." }
+bytes = "1"
