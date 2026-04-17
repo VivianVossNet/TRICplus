@@ -9,7 +9,7 @@ use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 
-use tric::{create_tric, Tric};
+use crate::{create_tric, Tric};
 
 use data_bus::DataBus;
 use module::{Module, ModuleContext};

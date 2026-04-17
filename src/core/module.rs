@@ -4,7 +4,7 @@
 
 use std::sync::Arc;
 
-use tric::Tric;
+use crate::Tric;
 
 use super::data_bus::DataBus;
 
