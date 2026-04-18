@@ -1,0 +1,97 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact: tric-macos-arm64
+          - os: macos-13
+            target: x86_64-apple-darwin
+            artifact: tric-macos-x86_64
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact: tric-linux-x86_64
+          - os: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-gnu
+            artifact: tric-linux-arm64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Build
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Package
+        run: |
+          cp target/${{ matrix.target }}/release/tric ${{ matrix.artifact }}
+          tar -czf ${{ matrix.artifact }}.tar.gz ${{ matrix.artifact }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}.tar.gz
+
+  build-freebsd:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build on FreeBSD
+        uses: vmactions/freebsd-vm@v1
+        with:
+          release: "15.0"
+          usesh: true
+          prepare: |
+            pkg install -y rust
+          run: |
+            cargo build --release
+            cp target/release/tric tric-freebsd-x86_64
+            tar -czf tric-freebsd-x86_64.tar.gz tric-freebsd-x86_64
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tric-freebsd-x86_64
+          path: tric-freebsd-x86_64.tar.gz
+
+  release:
+    needs: [build, build-freebsd]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            artifacts/tric-macos-arm64/tric-macos-arm64.tar.gz
+            artifacts/tric-macos-x86_64/tric-macos-x86_64.tar.gz
+            artifacts/tric-linux-x86_64/tric-linux-x86_64.tar.gz
+            artifacts/tric-linux-arm64/tric-linux-arm64.tar.gz
+            artifacts/tric-freebsd-x86_64/tric-freebsd-x86_64.tar.gz
