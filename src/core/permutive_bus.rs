@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 // Scope: Permutive storage router — TTL presence routes to transient (BTreeMap), absence to persistent (SQLite).
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use bytes::Bytes;
 
 use crate::core::data_bus::DataBus;
-use crate::core::sqlite_bus::{create_sqlite_bus, SqliteBus};
+use crate::core::sqlite_bus::{create_sqlite_bus, find_instance_slots, SqliteBus};
 use crate::{create_tric, Tric};
 
 const CACHE_PROMOTION_SECONDS: u64 = 60;
@@ -16,12 +16,52 @@ const CACHE_PROMOTION_SECONDS: u64 = 60;
 pub struct PermutiveBus {
     transient: Tric,
     persistent: SqliteBus,
+    base_dir: PathBuf,
+    instance: String,
+    slot: u32,
 }
 
-pub fn create_permutive_bus(sqlite_directory: &Path) -> PermutiveBus {
-    PermutiveBus {
-        transient: create_tric(),
-        persistent: create_sqlite_bus(sqlite_directory),
+pub fn create_permutive_bus(base_dir: &Path, instance: &str, slot: u32) -> PermutiveBus {
+    let transient = create_tric();
+    let persistent = create_sqlite_bus(base_dir, instance, slot);
+
+    let bus = PermutiveBus {
+        transient,
+        persistent,
+        base_dir: base_dir.to_path_buf(),
+        instance: instance.to_string(),
+        slot,
+    };
+
+    bus.write_registry();
+    bus
+}
+
+impl PermutiveBus {
+    fn write_registry(&self) {
+        let slots = find_instance_slots(&self.base_dir, &self.instance);
+        for (slot_id, _) in &slots {
+            let key = format!("_instance:{}_{slot_id}", self.instance);
+            if *slot_id == 0 {
+                self.transient.write_value(key.as_bytes(), b"active");
+            } else {
+                let origin = format!("clone:{}_{}", self.instance, 0);
+                self.transient
+                    .write_value(key.as_bytes(), origin.as_bytes());
+            }
+        }
+    }
+
+    pub fn read_base_dir(&self) -> &Path {
+        &self.base_dir
+    }
+
+    pub fn read_instance(&self) -> &str {
+        &self.instance
+    }
+
+    pub fn read_slot(&self) -> u32 {
+        self.slot
     }
 }
 
@@ -55,8 +95,7 @@ impl DataBus for PermutiveBus {
     }
 
     fn write_ttl(&self, key: &[u8], duration: Duration) {
-        if self.persistent.read_value(key).is_some() {
-            let value = self.persistent.read_value(key).unwrap();
+        if let Some(value) = self.persistent.read_value(key) {
             self.persistent.delete_value(key);
             self.transient.write_value(key, &value);
         }

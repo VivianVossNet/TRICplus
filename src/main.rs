@@ -18,6 +18,10 @@ fn main() {
         run_server();
     } else if args[0] == "shell" {
         run_shell();
+    } else if args[0] == "slots" {
+        run_slots();
+    } else if args[0] == "clone" {
+        run_clone(&args);
     } else {
         let command = args.join(" ");
         let response = send_command(&command);
@@ -36,8 +40,12 @@ fn run_server() {
     let socket_dir =
         std::env::var("TRIC_SOCKET_DIR").unwrap_or_else(|_| "/var/run/tric".to_string());
     let udp_bind = std::env::var("TRIC_UDP_BIND").unwrap_or_else(|_| "0.0.0.0:7483".to_string());
-    let sqlite_dir =
-        std::env::var("TRIC_SQLITE_DIR").unwrap_or_else(|_| "/var/db/tric".to_string());
+    let base_dir = std::env::var("TRIC_BASE_DIR").unwrap_or_else(|_| "/var/db/tric".to_string());
+    let instance = std::env::var("TRIC_INSTANCE").unwrap_or_else(|_| "default".to_string());
+    let slot: u32 = std::env::var("TRIC_SLOT")
+        .unwrap_or_else(|_| "0".to_string())
+        .parse()
+        .unwrap_or(0);
 
     if let Err(error) = std::fs::create_dir_all(&socket_dir) {
         eprintln!("failed to create socket directory {socket_dir}: {error}");
@@ -47,8 +55,11 @@ fn run_server() {
     let local_path = format!("{socket_dir}/server.sock");
     let admin_path = format!("{socket_dir}/admin.sock");
 
-    let data_bus: Arc<dyn DataBus> =
-        Arc::new(create_permutive_bus(std::path::Path::new(&sqlite_dir)));
+    let data_bus: Arc<dyn DataBus> = Arc::new(create_permutive_bus(
+        std::path::Path::new(&base_dir),
+        &instance,
+        slot,
+    ));
     let metrics = Arc::new(create_metrics());
     let mut core = create_core(data_bus);
 
@@ -144,6 +155,57 @@ fn send_command(command: &str) -> String {
     result
 }
 
+fn run_slots() {
+    let base_dir = std::env::var("TRIC_BASE_DIR").unwrap_or_else(|_| "/var/db/tric".to_string());
+    let instance = std::env::var("TRIC_INSTANCE").unwrap_or_else(|_| "default".to_string());
+
+    let slots =
+        tric::core::sqlite_bus::find_instance_slots(std::path::Path::new(&base_dir), &instance);
+
+    if slots.is_empty() {
+        println!("no slots for instance '{instance}' in {base_dir}");
+        return;
+    }
+
+    for (slot, size) in &slots {
+        let label = if *slot == 0 { "  (primary)" } else { "" };
+        println!("  {instance}_{slot}  {size}B{label}");
+    }
+}
+
+fn run_clone(args: &[String]) {
+    let base_dir = std::env::var("TRIC_BASE_DIR").unwrap_or_else(|_| "/var/db/tric".to_string());
+    let instance = std::env::var("TRIC_INSTANCE").unwrap_or_else(|_| "default".to_string());
+    let source_slot: u32 = std::env::var("TRIC_SLOT")
+        .unwrap_or_else(|_| "0".to_string())
+        .parse()
+        .unwrap_or(0);
+
+    let Some(target_str) = args.get(1) else {
+        eprintln!("usage: tric clone <target-slot>");
+        std::process::exit(1);
+    };
+    let Ok(target_slot) = target_str.parse::<u32>() else {
+        eprintln!("error: target slot must be a number");
+        std::process::exit(1);
+    };
+
+    match tric::core::sqlite_bus::create_clone(
+        std::path::Path::new(&base_dir),
+        &instance,
+        source_slot,
+        target_slot,
+    ) {
+        Ok(bytes) => {
+            println!("cloned {instance}_{source_slot} → {instance}_{target_slot}  ({bytes}B)")
+        }
+        Err(error) => {
+            eprintln!("error: {error}");
+            std::process::exit(1);
+        }
+    }
+}
+
 fn print_usage() {
     eprintln!("usage: tric <command> [args...]");
     eprintln!("       tric server            start the daemon");
@@ -154,6 +216,8 @@ fn print_usage() {
     eprintln!("       tric export -f <path.tric> [--debug] [--format mysql|postgres|sqlite]");
     eprintln!("       tric dump -f <path>    binary store dump");
     eprintln!("       tric restore -f <path> binary store restore");
+    eprintln!("       tric slots             list instance slots");
+    eprintln!("       tric clone <slot>      clone current slot");
     eprintln!("       tric shutdown          stop server");
     eprintln!("       tric shell             interactive REPL");
     eprintln!("       tric help              command list");

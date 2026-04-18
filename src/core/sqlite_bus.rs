@@ -17,8 +17,9 @@ pub struct SqliteBus {
     databases: Mutex<HashMap<String, Connection>>,
 }
 
-pub fn create_sqlite_bus(directory: &Path) -> SqliteBus {
-    std::fs::create_dir_all(directory).unwrap_or_else(|error| {
+pub fn create_sqlite_bus(base_dir: &Path, instance: &str, slot: u32) -> SqliteBus {
+    let directory = base_dir.join(format!("{instance}_{slot}"));
+    std::fs::create_dir_all(&directory).unwrap_or_else(|error| {
         panic!(
             "failed to create SQLite directory {}: {error}",
             directory.display()
@@ -26,7 +27,7 @@ pub fn create_sqlite_bus(directory: &Path) -> SqliteBus {
     });
 
     let mut databases = HashMap::new();
-    if let Ok(entries) = std::fs::read_dir(directory) {
+    if let Ok(entries) = std::fs::read_dir(&directory) {
         for entry in entries.flatten() {
             let path = entry.path();
             if path.extension().and_then(|ext| ext.to_str()) == Some("db") {
@@ -51,9 +52,75 @@ pub fn create_sqlite_bus(directory: &Path) -> SqliteBus {
     }
 
     SqliteBus {
-        directory: directory.to_path_buf(),
+        directory,
         databases: Mutex::new(databases),
     }
+}
+
+pub fn find_instance_slots(base_dir: &Path, instance: &str) -> Vec<(u32, u64)> {
+    let mut slots = Vec::new();
+    if let Ok(entries) = std::fs::read_dir(base_dir) {
+        let prefix = format!("{instance}_");
+        for entry in entries.flatten() {
+            let name = entry.file_name().to_string_lossy().to_string();
+            if let Some(slot_str) = name.strip_prefix(&prefix) {
+                if let Ok(slot) = slot_str.parse::<u32>() {
+                    let path = entry.path();
+                    let size = read_directory_size(&path);
+                    slots.push((slot, size));
+                }
+            }
+        }
+    }
+    slots.sort_by_key(|(slot, _)| *slot);
+    slots
+}
+
+pub fn create_clone(
+    base_dir: &Path,
+    instance: &str,
+    source_slot: u32,
+    target_slot: u32,
+) -> Result<u64, String> {
+    let source = base_dir.join(format!("{instance}_{source_slot}"));
+    let target = base_dir.join(format!("{instance}_{target_slot}"));
+
+    if target.exists() {
+        return Err(format!("slot {target_slot} already exists"));
+    }
+    if !source.exists() {
+        return Err(format!("source slot {source_slot} does not exist"));
+    }
+
+    std::fs::create_dir_all(&target)
+        .map_err(|error| format!("cannot create {target:?}: {error}"))?;
+
+    let mut bytes_copied = 0u64;
+    if let Ok(entries) = std::fs::read_dir(&source) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.extension().and_then(|ext| ext.to_str()) == Some("db") {
+                let dest = target.join(entry.file_name());
+                if let Ok(metadata) = std::fs::copy(&path, &dest) {
+                    bytes_copied += metadata;
+                }
+            }
+        }
+    }
+
+    Ok(bytes_copied)
+}
+
+fn read_directory_size(path: &Path) -> u64 {
+    let mut size = 0u64;
+    if let Ok(entries) = std::fs::read_dir(path) {
+        for entry in entries.flatten() {
+            if let Ok(metadata) = entry.metadata() {
+                size += metadata.len();
+            }
+        }
+    }
+    size
 }
 
 impl SqliteBus {

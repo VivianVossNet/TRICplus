@@ -7,7 +7,8 @@ use std::process::{Child, Command};
 use std::time::Duration;
 
 const SOCKET_DIR: &str = "/tmp/tric-integration-test";
-const SQLITE_DIR: &str = "/tmp/tric-integration-test/sqlite-data";
+const BASE_DIR: &str = "/tmp/tric-integration-test/data";
+const INSTANCE: &str = "test";
 const SERVER_SOCK: &str = "/tmp/tric-integration-test/server.sock";
 const ADMIN_SOCK: &str = "/tmp/tric-integration-test/admin.sock";
 
@@ -16,12 +17,14 @@ fn create_server() -> Child {
     let _ = std::fs::remove_file(SERVER_SOCK);
     let _ = std::fs::remove_file(ADMIN_SOCK);
     std::fs::create_dir_all(SOCKET_DIR).unwrap();
-    std::fs::create_dir_all(SQLITE_DIR).unwrap();
+    std::fs::create_dir_all(BASE_DIR).unwrap();
 
     let child = Command::new("target/release/tric")
         .arg("server")
         .env("TRIC_SOCKET_DIR", SOCKET_DIR)
-        .env("TRIC_SQLITE_DIR", SQLITE_DIR)
+        .env("TRIC_BASE_DIR", BASE_DIR)
+        .env("TRIC_INSTANCE", INSTANCE)
+        .env("TRIC_SLOT", "0")
         .spawn()
         .expect("failed to start tric server");
 

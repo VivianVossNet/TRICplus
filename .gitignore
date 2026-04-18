@@ -6,3 +6,7 @@ context.tar.gz
 /concept
 CLAUDE.md
 HANDOVER.md
+/tric-data
+*.db
+*.db-shm
+*.db-wal
