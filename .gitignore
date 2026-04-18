@@ -1,5 +1,7 @@
 /target
-/release/bin/
+/release/bin/*
+!/release/bin/.gitkeep
+dump.rdb
 Cargo.lock
 context.tar.gz
 .DS_Store
