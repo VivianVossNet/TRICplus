@@ -1,6 +1,5 @@
 /target
-/release/tric
-/release/*.tar.gz
+/release/bin/
 Cargo.lock
 context.tar.gz
 .DS_Store
