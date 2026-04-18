@@ -22,6 +22,8 @@ fn main() {
         run_slots();
     } else if args[0] == "clone" {
         run_clone(&args);
+    } else if args[0] == "benchmark" || args[0] == "-b" || args[0] == "--benchmark" {
+        run_benchmark();
     } else {
         let command = args.join(" ");
         let response = send_command(&command);
@@ -155,6 +157,10 @@ fn send_command(command: &str) -> String {
     result
 }
 
+fn run_benchmark() {
+    tric::modules::benchmark::run_benchmark();
+}
+
 fn run_slots() {
     let base_dir = std::env::var("TRIC_BASE_DIR").unwrap_or_else(|_| "/var/db/tric".to_string());
     let instance = std::env::var("TRIC_INSTANCE").unwrap_or_else(|_| "default".to_string());
@@ -218,6 +224,7 @@ fn print_usage() {
     eprintln!("       tric restore -f <path> binary store restore");
     eprintln!("       tric slots             list instance slots");
     eprintln!("       tric clone <slot>      clone current slot");
+    eprintln!("       tric benchmark         performance benchmark (or -b / --benchmark)");
     eprintln!("       tric shutdown          stop server");
     eprintln!("       tric shell             interactive REPL");
     eprintln!("       tric help              command list");

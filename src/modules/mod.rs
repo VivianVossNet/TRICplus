@@ -4,6 +4,7 @@
 
 pub mod analyser;
 pub mod auth;
+pub mod benchmark;
 pub mod cli;
 pub mod codec;
 pub mod export;
