@@ -308,3 +308,190 @@ fn check_benchmark_value_sizes() {
         eprintln!("{}", result.render());
     }
 }
+
+#[test]
+#[ignore]
+fn check_benchmark_redis_write() {
+    let Ok(client) = redis::Client::open("redis://127.0.0.1/") else {
+        eprintln!("  SKIP: Redis not available on 127.0.0.1:6379");
+        return;
+    };
+    let Ok(mut connection) = client.get_connection() else {
+        eprintln!("  SKIP: Redis not running on 127.0.0.1:6379");
+        return;
+    };
+    let value = create_value(128);
+    let count = 100_000;
+
+    let result = run_benchmark("redis write (128B, TCP localhost)", count, |index| {
+        let key = create_key(index);
+        let _: Result<(), _> = redis::cmd("SET")
+            .arg(&key)
+            .arg(&value)
+            .query(&mut connection);
+    });
+
+    eprintln!("{}", result.render());
+}
+
+#[test]
+#[ignore]
+fn check_benchmark_redis_read() {
+    let Ok(client) = redis::Client::open("redis://127.0.0.1/") else {
+        eprintln!("  SKIP: Redis not available on 127.0.0.1:6379");
+        return;
+    };
+    let Ok(mut connection) = client.get_connection() else {
+        eprintln!("  SKIP: Redis not running on 127.0.0.1:6379");
+        return;
+    };
+    let value = create_value(128);
+    let count = 100_000;
+
+    for index in 0..count {
+        let key = create_key(index);
+        let _: Result<(), _> = redis::cmd("SET")
+            .arg(&key)
+            .arg(&value)
+            .query(&mut connection);
+    }
+
+    let result = run_benchmark("redis read (128B, TCP localhost)", count, |index| {
+        let key = create_key(index);
+        let _: Result<Vec<u8>, _> = redis::cmd("GET").arg(&key).query(&mut connection);
+    });
+
+    eprintln!("{}", result.render());
+}
+
+#[test]
+#[ignore]
+fn check_benchmark_redis_mixed() {
+    let Ok(client) = redis::Client::open("redis://127.0.0.1/") else {
+        eprintln!("  SKIP: Redis not available on 127.0.0.1:6379");
+        return;
+    };
+    let Ok(mut connection) = client.get_connection() else {
+        eprintln!("  SKIP: Redis not running on 127.0.0.1:6379");
+        return;
+    };
+    let value = create_value(128);
+    let count = 100_000;
+
+    let result = run_benchmark("redis mixed 50/50 rw (128B, TCP)", count, |index| {
+        let key = create_key(index);
+        if index % 2 == 0 {
+            let _: Result<(), _> = redis::cmd("SET")
+                .arg(&key)
+                .arg(&value)
+                .query(&mut connection);
+        } else {
+            let read_key = create_key(index.saturating_sub(1));
+            let _: Result<Vec<u8>, _> = redis::cmd("GET").arg(&read_key).query(&mut connection);
+        }
+    });
+
+    eprintln!("{}", result.render());
+}
+
+#[test]
+#[ignore]
+fn check_benchmark_tric_server_write() {
+    use std::os::unix::net::UnixDatagram;
+
+    let socket_dir =
+        std::env::var("TRIC_SOCKET_DIR").unwrap_or_else(|_| "/var/run/tric".to_string());
+    let server_sock = format!("{socket_dir}/server.sock");
+    let client_path = format!("/tmp/tric-bench-client-{}.sock", std::process::id());
+    let _ = std::fs::remove_file(&client_path);
+
+    let Ok(client) = UnixDatagram::bind(&client_path) else {
+        eprintln!("  SKIP: cannot bind client socket");
+        return;
+    };
+    if client.connect(&server_sock).is_err() {
+        eprintln!("  SKIP: TRIC+ server not running at {server_sock}");
+        let _ = std::fs::remove_file(&client_path);
+        return;
+    }
+    client
+        .set_read_timeout(Some(Duration::from_secs(5)))
+        .unwrap();
+
+    let value = create_value(128);
+    let count = 50_000;
+
+    let result = run_benchmark("tric+ server write (128B, UDS)", count, |index| {
+        let key = create_key(index);
+        let mut datagram = Vec::with_capacity(9 + key.len() + value.len());
+        datagram.extend_from_slice(&(index as u32).to_be_bytes());
+        datagram.push(0x02);
+        datagram.extend_from_slice(&(key.len() as u32).to_be_bytes());
+        datagram.extend_from_slice(&key);
+        datagram.extend_from_slice(&(value.len() as u32).to_be_bytes());
+        datagram.extend_from_slice(&value);
+        let _ = client.send(&datagram);
+        let mut buffer = [0u8; 64];
+        let _ = client.recv(&mut buffer);
+    });
+
+    let _ = std::fs::remove_file(&client_path);
+    eprintln!("{}", result.render());
+}
+
+#[test]
+#[ignore]
+fn check_benchmark_tric_server_read() {
+    use std::os::unix::net::UnixDatagram;
+
+    let socket_dir =
+        std::env::var("TRIC_SOCKET_DIR").unwrap_or_else(|_| "/var/run/tric".to_string());
+    let server_sock = format!("{socket_dir}/server.sock");
+    let client_path = format!("/tmp/tric-bench-read-{}.sock", std::process::id());
+    let _ = std::fs::remove_file(&client_path);
+
+    let Ok(client) = UnixDatagram::bind(&client_path) else {
+        eprintln!("  SKIP: cannot bind client socket");
+        return;
+    };
+    if client.connect(&server_sock).is_err() {
+        eprintln!("  SKIP: TRIC+ server not running at {server_sock}");
+        let _ = std::fs::remove_file(&client_path);
+        return;
+    }
+    client
+        .set_read_timeout(Some(Duration::from_secs(5)))
+        .unwrap();
+
+    let value = create_value(128);
+    let count = 50_000;
+
+    for index in 0..count {
+        let key = create_key(index);
+        let mut datagram = Vec::with_capacity(9 + key.len() + value.len());
+        datagram.extend_from_slice(&(index as u32).to_be_bytes());
+        datagram.push(0x02);
+        datagram.extend_from_slice(&(key.len() as u32).to_be_bytes());
+        datagram.extend_from_slice(&key);
+        datagram.extend_from_slice(&(value.len() as u32).to_be_bytes());
+        datagram.extend_from_slice(&value);
+        let _ = client.send(&datagram);
+        let mut buffer = [0u8; 64];
+        let _ = client.recv(&mut buffer);
+    }
+
+    let result = run_benchmark("tric+ server read (128B, UDS)", count, |index| {
+        let key = create_key(index);
+        let mut datagram = Vec::with_capacity(9 + key.len());
+        datagram.extend_from_slice(&(index as u32).to_be_bytes());
+        datagram.push(0x01);
+        datagram.extend_from_slice(&(key.len() as u32).to_be_bytes());
+        datagram.extend_from_slice(&key);
+        let _ = client.send(&datagram);
+        let mut buffer = [0u8; 256];
+        let _ = client.recv(&mut buffer);
+    });
+
+    let _ = std::fs::remove_file(&client_path);
+    eprintln!("{}", result.render());
+}

@@ -26,3 +26,6 @@ sqlparser = "0.52"
 tar = "0.4"
 brotli = "7"
 rusqlite = { version = "0.31", features = ["bundled"] }
+
+[dev-dependencies]
+redis = "0.27"
