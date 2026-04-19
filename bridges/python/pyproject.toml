@@ -1,0 +1,31 @@
+# Copyright (c) 2025-2026 Vivian Voss
+# SPDX-License-Identifier: BSD-3-Clause
+# Scope: TRIC+ Python client — pyproject.toml declaring the package and tool configuration.
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tric"
+version = "0.0.0"
+description = "TRIC+ Permutive Database Engine — Python client bridge"
+authors = [{ name = "Vivian Voss" }]
+license = { text = "BSD-3-Clause" }
+requires-python = ">=3.10"
+readme = "../../release/manual/clients/python/01-quickstart.md"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "SIM", "RUF"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+files = ["src/tric"]

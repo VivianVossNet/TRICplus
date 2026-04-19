@@ -15,7 +15,7 @@
 ![PHP](https://img.shields.io/badge/PHP-planned-555555?style=flat-square&logo=php)
 ![Java](https://img.shields.io/badge/Java-planned-555555?style=flat-square&logo=openjdk)
 ![Kotlin](https://img.shields.io/badge/Kotlin-planned-555555?style=flat-square&logo=kotlin)
-![Python](https://img.shields.io/badge/Python-planned-555555?style=flat-square&logo=python)
+![Python](https://img.shields.io/badge/Python-ready-4caf50?style=flat-square&logo=python)
 ![Ruby](https://img.shields.io/badge/Ruby-planned-555555?style=flat-square&logo=ruby)
 ![C#](https://img.shields.io/badge/C%23-planned-555555?style=flat-square&logo=dotnet)
 ![Go](https://img.shields.io/badge/Go-planned-555555?style=flat-square&logo=go)
@@ -48,7 +48,7 @@ Write a value. Set a TTL and it lives in a `BTreeMap`. Don't set a TTL and it li
 - **SQL interface:** `tric query "SELECT * FROM users WHERE key = '42'"`. The SQL layer reads directly from the persistent tier.
 - **Import / Export:** native SQL dumps (MySQL, PostgreSQL, SQLite), `.tric` Brotli-compressed archives, differential imports that apply only what changed.
 - **Instance management:** multiple projects live under `/var/db/tric/`, each with slot-based clones for staging, migration, and A/B work.
-- **20 language bridges** planned, 7 ready today (C, C++, Swift, Nim, Lua, Tcl, Zig; Waves 1 and 2 complete). C is the FFI foundation; later waves use native sockets for each language's idiomatic client.
+- **20 language bridges** planned, 8 ready today (C, C++, Swift, Nim, Lua, Tcl, Zig, Python). C is the FFI foundation; the remaining waves use native sockets for each language's idiomatic client.
 - **8 CMS and shop integrations** planned on top of the Wave 3 bridges: WordPress, Drupal, Craft CMS, WooCommerce, Magento, Shopify, PrestaShop, Umbraco.
 
 ## Performance
@@ -216,7 +216,7 @@ Binary protocol over UDS DGRAM (local) and UDP (network). Each network datagram 
 |------|-----------|-----------|-------|
 | 1 | **C** | Shared library (`.so` / `.dylib`), FFI base | 1/1 |
 | 2 | **C++**, **Swift**, **Nim**, **Lua**, **Tcl**, **Zig** | C FFI consumers | 6/6 |
-| 3 | PHP, Java, Kotlin, Python, Ruby, C#/.NET, Go | Native socket | 0/7 |
+| 3 | PHP, Java, Kotlin, **Python**, Ruby, C#/.NET, Go | Native socket | 1/7 |
 | 4 | JavaScript, TypeScript, Perl, Elixir, Dart, Rust | Native socket | 0/6 |
 
 **Bold** means production-ready. Every ready bridge ships with a quickstart manual under [`release/manual/clients/`](release/manual/clients/) and an integration test suite.

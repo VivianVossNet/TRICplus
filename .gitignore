@@ -25,3 +25,8 @@ bridges/tcl/libtric_tcl.dylib
 bridges/tcl/libtric_tcl.so
 bridges/lua/tric.dylib
 bridges/lua/tric.so
+bridges/python/**/__pycache__/
+bridges/python/.ruff_cache/
+bridges/python/.mypy_cache/
+bridges/python/src/tric.egg-info/
+bridges/python/.venv/
