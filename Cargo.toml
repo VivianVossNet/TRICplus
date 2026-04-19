@@ -2,7 +2,7 @@
 name = "tric"
 version = "0.0.0"
 edition = "2021"
-license = "Apache-2.0"
+license = "BUSL-1.1"
 description = "TRIC+ Permutive Database Engine — embedded key-value store with TTL-routed transient and persistent tiers."
 repository = "https://github.com/VivianVossNet/TRICplus"
 readme = "README.md"

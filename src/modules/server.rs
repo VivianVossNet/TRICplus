@@ -1,5 +1,5 @@
-// Copyright 2025 Vivian Voss. Licensed under the Apache License, Version 2.0.
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2025-2026 Vivian Voss. Licensed under the Business Source License 1.1.
+// SPDX-License-Identifier: BUSL-1.1
 // Scope: Server module — binds UDS DGRAM + UDP sockets, spawns workers, routes requests via DataBus.
 
 use std::net::UdpSocket;

@@ -1,5 +1,5 @@
-// Copyright 2025 Vivian Voss. Licensed under the Apache License, Version 2.0.
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2025-2026 Vivian Voss. Licensed under the Business Source License 1.1.
+// SPDX-License-Identifier: BUSL-1.1
 // Scope: Health — PING (0x13) handling, bidirectional liveness probe.
 
 use crate::modules::codec::{Request, Response};

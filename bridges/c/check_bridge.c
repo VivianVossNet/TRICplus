@@ -1,5 +1,5 @@
-/* Copyright 2025 Vivian Voss. Licensed under the Apache License, Version 2.0. */
-/* SPDX-License-Identifier: Apache-2.0 */
+/* Copyright 2025-2026 Vivian Voss. Licensed under the BSD 3-Clause License. */
+/* SPDX-License-Identifier: BSD-3-Clause */
 /* Scope: Integration test for the TRIC+ C bridge — verifies all six primitives against a running server. */
 
 #include "tric.h"
