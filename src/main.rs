@@ -1,5 +1,5 @@
-// Copyright 2025 Vivian Voss. Licensed under the Apache License, Version 2.0.
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2025-2026 Vivian Voss. Licensed under the Business Source License 1.1.
+// SPDX-License-Identifier: BUSL-1.1
 // Scope: tric — unified binary. `tric server` starts the daemon. Everything else is CLI.
 
 use std::io::{self, BufRead, Write};

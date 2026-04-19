@@ -243,4 +243,10 @@ WordPress, Drupal, Craft CMS, WooCommerce, Magento, Shopify, PrestaShop, Umbraco
 
 ## Licence
 
-Apache-2.0. See [`LICENSE`](LICENSE).
+Dual model. Use whichever fits.
+
+**Server (`tric` crate — binary and library)** is licensed under the **Business Source License 1.1**. Non-production use is unrestricted. Production use on a single host is granted free of charge under the Additional Use Grant; a "host" is one OS instance (one bare-metal machine, VM, container, or FreeBSD jail each count as one). Production across more than one host, or offering TRIC+ as a managed service to third parties, requires a commercial licence. The server converts to Apache-2.0 on **2030-04-19**, or four years after the release date of each tagged version, whichever comes first. See [`LICENSE`](LICENSE) for the full text and [`LICENSE-APACHE`](LICENSE-APACHE) for the Change License.
+
+**Language bridges (`bridges/`)** are licensed under the **BSD 3-Clause License**. No production restriction, no Change Date — use them with any TRIC+ server, any application, any deployment model. See [`bridges/LICENSE`](bridges/LICENSE).
+
+Copyright (c) 2025-2026 Vivian Voss. For commercial licensing, contact <https://vivianvoss.net/tric>.
