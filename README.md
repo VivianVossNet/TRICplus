@@ -1,5 +1,34 @@
 # TRIC+
 
+**FFI base:**
+
+![C](https://img.shields.io/badge/C-ready-4caf50?style=flat-square&logo=c)
+
+**FFI consumers:**
+
+![C++](https://img.shields.io/badge/C++-ready-4caf50?style=flat-square&logo=cplusplus)
+![Swift](https://img.shields.io/badge/Swift-ready-4caf50?style=flat-square&logo=swift)
+![Nim](https://img.shields.io/badge/Nim-ready-4caf50?style=flat-square&logo=nim)
+![Lua](https://img.shields.io/badge/Lua-ready-4caf50?style=flat-square&logo=lua)
+![Tcl](https://img.shields.io/badge/Tcl-ready-4caf50?style=flat-square)
+![Zig](https://img.shields.io/badge/Zig-ready-4caf50?style=flat-square&logo=zig)
+
+**Native socket:**
+
+![PHP](https://img.shields.io/badge/PHP-planned-555555?style=flat-square&logo=php)
+![Java](https://img.shields.io/badge/Java-planned-555555?style=flat-square&logo=openjdk)
+![Kotlin](https://img.shields.io/badge/Kotlin-planned-555555?style=flat-square&logo=kotlin)
+![Python](https://img.shields.io/badge/Python-planned-555555?style=flat-square&logo=python)
+![Ruby](https://img.shields.io/badge/Ruby-planned-555555?style=flat-square&logo=ruby)
+![C#](https://img.shields.io/badge/C%23-planned-555555?style=flat-square&logo=dotnet)
+![Go](https://img.shields.io/badge/Go-planned-555555?style=flat-square&logo=go)
+![JavaScript](https://img.shields.io/badge/JavaScript-planned-555555?style=flat-square&logo=javascript)
+![TypeScript](https://img.shields.io/badge/TypeScript-planned-555555?style=flat-square&logo=typescript)
+![Perl](https://img.shields.io/badge/Perl-planned-555555?style=flat-square&logo=perl)
+![Elixir](https://img.shields.io/badge/Elixir-planned-555555?style=flat-square&logo=elixir)
+![Dart](https://img.shields.io/badge/Dart-planned-555555?style=flat-square&logo=dart)
+![Rust](https://img.shields.io/badge/Rust-native-dea584?style=flat-square&logo=rust)
+
 **The database that decides where your data lives, so you do not have to.**
 
 Every production stack that needs both a cache and a database asks the developer to choose, configure two systems, and keep them in sync by hand. TRIC+ does not ask. Write a value with a time-to-live and it lives in nanosecond-fast memory. Write it without one and it lives on disk. The API does not change. You think in how long your data needs to live; the engine decides where it lives.
@@ -9,34 +38,6 @@ This is **permutive storage**: data permutes between a transient tier (a `BTreeM
 You could assemble this yourself: a `BTreeMap`, a `rusqlite` binding, a lazy TTL sweeper, a cache-promotion pass, a wire protocol with per-datagram encryption and traffic-shape padding, atomic compare-and-delete on the server, prefix-scan as a first-class operation, a reproducible benchmark harness. TRIC+ is what happens when someone already did.
 
 On FreeBSD, the canonical deployment target, TRIC+ is faster than Redis in both read and write quadrants of the server-to-server comparison. Waves 1 and 2 of the bridge programme are complete; Wave 3 covers enterprise languages (PHP, Java, Kotlin, Python, Ruby, C#, Go), and Wave 4 covers native-socket clients for the remaining ecosystems. The server is free for any single-host production use under the Business Source License, and every tagged version converts to Apache 2.0 four years after release. The reader who needed a KV store that was honest about persistence, fast on the platform they actually run, and legally clear now has one.
-
-**Wave 1** (FFI base):
-![C](https://img.shields.io/badge/C-ready-4caf50?style=flat-square&logo=c)
-
-**Wave 2** (C FFI consumers):
-![C++](https://img.shields.io/badge/C++-ready-4caf50?style=flat-square&logo=cplusplus)
-![Swift](https://img.shields.io/badge/Swift-ready-4caf50?style=flat-square&logo=swift)
-![Nim](https://img.shields.io/badge/Nim-ready-4caf50?style=flat-square&logo=nim)
-![Lua](https://img.shields.io/badge/Lua-ready-4caf50?style=flat-square&logo=lua)
-![Tcl](https://img.shields.io/badge/Tcl-ready-4caf50?style=flat-square)
-![Zig](https://img.shields.io/badge/Zig-ready-4caf50?style=flat-square&logo=zig)
-
-**Wave 3** (native socket):
-![PHP](https://img.shields.io/badge/PHP-planned-555555?style=flat-square&logo=php)
-![Java](https://img.shields.io/badge/Java-planned-555555?style=flat-square&logo=openjdk)
-![Kotlin](https://img.shields.io/badge/Kotlin-planned-555555?style=flat-square&logo=kotlin)
-![Python](https://img.shields.io/badge/Python-planned-555555?style=flat-square&logo=python)
-![Ruby](https://img.shields.io/badge/Ruby-planned-555555?style=flat-square&logo=ruby)
-![C#](https://img.shields.io/badge/C%23-planned-555555?style=flat-square&logo=dotnet)
-![Go](https://img.shields.io/badge/Go-planned-555555?style=flat-square&logo=go)
-
-**Wave 4** (native socket):
-![JavaScript](https://img.shields.io/badge/JavaScript-planned-555555?style=flat-square&logo=javascript)
-![TypeScript](https://img.shields.io/badge/TypeScript-planned-555555?style=flat-square&logo=typescript)
-![Perl](https://img.shields.io/badge/Perl-planned-555555?style=flat-square&logo=perl)
-![Elixir](https://img.shields.io/badge/Elixir-planned-555555?style=flat-square&logo=elixir)
-![Dart](https://img.shields.io/badge/Dart-planned-555555?style=flat-square&logo=dart)
-![Rust](https://img.shields.io/badge/Rust-native-dea584?style=flat-square&logo=rust)
 
 Write a value. Set a TTL and it lives in a `BTreeMap`. Don't set a TTL and it lives in SQLite: one database file per namespace, WAL mode for concurrent reads, cache-promotion of hot keys back into memory on read. Not SQLite bolted on next to a cache; one engine, two tiers, same six primitives. The developer thinks in lifetimes, not systems.
 
