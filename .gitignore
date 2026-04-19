@@ -12,3 +12,4 @@ HANDOVER.md
 *.db
 *.db-shm
 *.db-wal
+bridges/*/check_bridge

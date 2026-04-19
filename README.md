@@ -2,7 +2,7 @@
 
 **Permutive Database Engine** — data permutes between transient memory and persistent storage based on lifetime, not configuration.
 
-![C](https://img.shields.io/badge/C-FFI_base-555555?style=flat-square&logo=c)
+![C](https://img.shields.io/badge/C-ready-4caf50?style=flat-square&logo=c)
 ![C++](https://img.shields.io/badge/C++-planned-555555?style=flat-square&logo=cplusplus)
 ![Rust](https://img.shields.io/badge/Rust-native-dea584?style=flat-square&logo=rust)
 ![Swift](https://img.shields.io/badge/Swift-planned-555555?style=flat-square&logo=swift)
