@@ -30,3 +30,6 @@ bridges/python/.ruff_cache/
 bridges/python/.mypy_cache/
 bridges/python/src/tric.egg-info/
 bridges/python/.venv/
+bridges/javascript/node_modules/
+bridges/javascript/dist/
+bridges/javascript/package-lock.json

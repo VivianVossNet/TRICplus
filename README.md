@@ -19,8 +19,8 @@
 ![Ruby](https://img.shields.io/badge/Ruby-planned-555555?style=flat-square&logo=ruby)
 ![C#](https://img.shields.io/badge/C%23-planned-555555?style=flat-square&logo=dotnet)
 ![Go](https://img.shields.io/badge/Go-planned-555555?style=flat-square&logo=go)
-![JavaScript](https://img.shields.io/badge/JavaScript-planned-555555?style=flat-square&logo=javascript)
-![TypeScript](https://img.shields.io/badge/TypeScript-planned-555555?style=flat-square&logo=typescript)
+![JavaScript](https://img.shields.io/badge/JavaScript-ready-4caf50?style=flat-square&logo=javascript)
+![TypeScript](https://img.shields.io/badge/TypeScript-ready-4caf50?style=flat-square&logo=typescript)
 ![Perl](https://img.shields.io/badge/Perl-planned-555555?style=flat-square&logo=perl)
 ![Elixir](https://img.shields.io/badge/Elixir-planned-555555?style=flat-square&logo=elixir)
 ![Dart](https://img.shields.io/badge/Dart-planned-555555?style=flat-square&logo=dart)
@@ -48,7 +48,7 @@ Write a value. Set a TTL and it lives in a `BTreeMap`. Don't set a TTL and it li
 - **SQL interface:** `tric query "SELECT * FROM users WHERE key = '42'"`. The SQL layer reads directly from the persistent tier.
 - **Import / Export:** native SQL dumps (MySQL, PostgreSQL, SQLite), `.tric` Brotli-compressed archives, differential imports that apply only what changed.
 - **Instance management:** multiple projects live under `/var/db/tric/`, each with slot-based clones for staging, migration, and A/B work.
-- **20 language bridges** planned, 8 ready today (C, C++, Swift, Nim, Lua, Tcl, Zig, Python). C is the FFI foundation; the remaining waves use native sockets for each language's idiomatic client.
+- **20 language bridges** planned, 10 ready today (C, C++, Swift, Nim, Lua, Tcl, Zig, Python, JavaScript, TypeScript). C is the FFI foundation; the remaining waves use native sockets for each language's idiomatic client.
 - **8 CMS and shop integrations** planned on top of the Wave 3 bridges: WordPress, Drupal, Craft CMS, WooCommerce, Magento, Shopify, PrestaShop, Umbraco.
 
 ## Performance
@@ -217,7 +217,7 @@ Binary protocol over UDS DGRAM (local) and UDP (network). Each network datagram 
 | 1 | **C** | Shared library (`.so` / `.dylib`), FFI base | 1/1 |
 | 2 | **C++**, **Swift**, **Nim**, **Lua**, **Tcl**, **Zig** | C FFI consumers | 6/6 |
 | 3 | PHP, Java, Kotlin, **Python**, Ruby, C#/.NET, Go | Native socket | 1/7 |
-| 4 | JavaScript, TypeScript, Perl, Elixir, Dart, Rust | Native socket | 0/6 |
+| 4 | **JavaScript**, **TypeScript**, Perl, Elixir, Dart, Rust | Native socket | 2/6 |
 
 **Bold** means production-ready. Every ready bridge ships with a quickstart manual under [`release/manual/clients/`](release/manual/clients/) and an integration test suite.
 
