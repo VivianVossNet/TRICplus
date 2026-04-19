@@ -36,6 +36,22 @@ pub fn decode_local(raw: &[u8]) -> Option<Request> {
     })
 }
 
+pub fn decode_local_into(raw: &[u8], request: &mut Request) -> bool {
+    if raw.len() < 5 {
+        return false;
+    }
+    let opcode = raw[4];
+    if opcode == 0x00 || opcode == 0xFF {
+        return false;
+    }
+    request.request_id = u32::from_be_bytes([raw[0], raw[1], raw[2], raw[3]]);
+    request.opcode = opcode;
+    request.payload.clear();
+    request.payload.extend_from_slice(&raw[5..]);
+    request.is_local = true;
+    true
+}
+
 pub fn encode_local(response: &Response) -> Vec<u8> {
     let mut buffer = Vec::with_capacity(5 + response.payload.len());
     buffer.extend_from_slice(&response.request_id.to_be_bytes());
