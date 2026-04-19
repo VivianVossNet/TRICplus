@@ -30,15 +30,16 @@ static void write_u64_be(uint8_t *buffer, uint64_t value) {
 }
 
 static uint32_t read_u32_be(const uint8_t *buffer) {
-    return ((uint32_t)buffer[0] << 24)
-         | ((uint32_t)buffer[1] << 16)
-         | ((uint32_t)buffer[2] << 8)
-         | ((uint32_t)buffer[3]);
+    return ((uint32_t)buffer[0] << 24) | ((uint32_t)buffer[1] << 16) | ((uint32_t)buffer[2] << 8) |
+           ((uint32_t)buffer[3]);
 }
 
-static ssize_t write_request(TricConnection *connection, uint8_t opcode,
-                             const uint8_t *payload, size_t payload_length,
-                             uint8_t *buffer, size_t buffer_size) {
+static ssize_t write_request(TricConnection *connection,
+                             uint8_t opcode,
+                             const uint8_t *payload,
+                             size_t payload_length,
+                             uint8_t *buffer,
+                             size_t buffer_size) {
     size_t total = 5 + payload_length;
     if (total > buffer_size) return -1;
 
@@ -65,8 +66,7 @@ TricConnection create_connection(const char *socket_path) {
     struct sockaddr_un client_addr;
     memset(&client_addr, 0, sizeof(client_addr));
     client_addr.sun_family = AF_UNIX;
-    snprintf(client_addr.sun_path, sizeof(client_addr.sun_path),
-             "/tmp/tric-c-%d.sock", getpid());
+    snprintf(client_addr.sun_path, sizeof(client_addr.sun_path), "/tmp/tric-c-%d.sock", getpid());
     unlink(client_addr.sun_path);
 
     if (bind(fd, (struct sockaddr *)&client_addr, sizeof(client_addr)) < 0) {
@@ -136,8 +136,11 @@ TricValue read_value(TricConnection *connection, const uint8_t *key, size_t key_
     return result;
 }
 
-int write_value(TricConnection *connection, const uint8_t *key, size_t key_length,
-                const uint8_t *value, size_t value_length) {
+int write_value(TricConnection *connection,
+                const uint8_t *key,
+                size_t key_length,
+                const uint8_t *value,
+                size_t value_length) {
     uint8_t buffer[2048];
     uint8_t payload[4 + 2048 + 4 + 2048 + 8];
     size_t offset = 0;
@@ -172,8 +175,11 @@ int delete_value(TricConnection *connection, const uint8_t *key, size_t key_leng
     return buffer[4] == 0x80 ? 0 : -1;
 }
 
-int delete_value_if_match(TricConnection *connection, const uint8_t *key, size_t key_length,
-                          const uint8_t *expected, size_t expected_length) {
+int delete_value_if_match(TricConnection *connection,
+                          const uint8_t *key,
+                          size_t key_length,
+                          const uint8_t *expected,
+                          size_t expected_length) {
     uint8_t buffer[2048];
     uint8_t payload[4 + 2048 + 4 + 2048];
     size_t offset = 0;
@@ -250,16 +256,26 @@ TricScanResult find_by_prefix(TricConnection *connection, const uint8_t *prefix,
 
             uint32_t value_length = read_u32_be(buffer + offset);
             offset += 4;
-            if (offset + value_length > (size_t)received) { free(key); continue; }
+            if (offset + value_length > (size_t)received) {
+                free(key);
+                continue;
+            }
 
             uint8_t *value = (uint8_t *)malloc(value_length);
-            if (!value) { free(key); continue; }
+            if (!value) {
+                free(key);
+                continue;
+            }
             memcpy(value, buffer + offset, value_length);
 
             if (result.count >= capacity) {
                 capacity *= 2;
                 TricPair *grown = (TricPair *)realloc(result.pairs, capacity * sizeof(TricPair));
-                if (!grown) { free(key); free(value); break; }
+                if (!grown) {
+                    free(key);
+                    free(value);
+                    break;
+                }
                 result.pairs = grown;
             }
 

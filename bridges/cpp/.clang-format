@@ -1,0 +1,32 @@
+# TRIC+ house style — C++ bridge.
+# PointerAlignment: Left matches the C++ idiom (int* p, T& ref) used throughout tric.hpp.
+# AccessModifierOffset: -4 keeps access specifiers flush with the class keyword.
+
+---
+BasedOnStyle: LLVM
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 120
+BreakBeforeBraces: Attach
+PointerAlignment: Left
+DerivePointerAlignment: false
+AccessModifierOffset: -4
+SpacesBeforeTrailingComments: 1
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortLoopsOnASingleLine: false
+AllowShortBlocksOnASingleLine: Never
+IndentCaseLabels: true
+AlignConsecutiveDeclarations: false
+AlignConsecutiveAssignments: false
+KeepEmptyLinesAtTheStartOfBlocks: false
+SortIncludes: false
+BreakConstructorInitializers: BeforeComma
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+AllowAllConstructorInitializersOnNextLine: false
+BinPackArguments: false
+BinPackParameters: false
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+...
