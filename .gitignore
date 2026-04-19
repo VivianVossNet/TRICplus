@@ -23,3 +23,5 @@ bridges/nim/nimcache/
 bridges/nim/tests/bridge_test
 bridges/tcl/libtric_tcl.dylib
 bridges/tcl/libtric_tcl.so
+bridges/lua/tric.dylib
+bridges/lua/tric.so
