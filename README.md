@@ -1,11 +1,8 @@
 # TRIC+
 
-**FFI base:**
+**C-based bridges:**
 
 ![C](https://img.shields.io/badge/C-ready-4caf50?style=flat-square&logo=c)
-
-**FFI consumers:**
-
 ![C++](https://img.shields.io/badge/C++-ready-4caf50?style=flat-square&logo=cplusplus)
 ![Swift](https://img.shields.io/badge/Swift-ready-4caf50?style=flat-square&logo=swift)
 ![Nim](https://img.shields.io/badge/Nim-ready-4caf50?style=flat-square&logo=nim)
@@ -13,7 +10,7 @@
 ![Tcl](https://img.shields.io/badge/Tcl-ready-4caf50?style=flat-square)
 ![Zig](https://img.shields.io/badge/Zig-ready-4caf50?style=flat-square&logo=zig)
 
-**Native socket:**
+**Native-socket clients:**
 
 ![PHP](https://img.shields.io/badge/PHP-planned-555555?style=flat-square&logo=php)
 ![Java](https://img.shields.io/badge/Java-planned-555555?style=flat-square&logo=openjdk)
